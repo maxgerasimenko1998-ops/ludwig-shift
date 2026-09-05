@@ -278,6 +278,16 @@
   </div>
 
 <script type="module">
+// ПАМЯТЬ БРАУЗЕРА — ТОЛЬКО СВОЯ. Все пульты живут на одном домене
+// maxgerasimenko1998-ops.github.io, а localStorage общий на домен, а не на папку.
+// Поэтому пульты воровали друг у друга мозг и контекст дня: 29.08 и 05.09 пульт
+// съёмки подхватывал ID УЛИЧНОГО мозга, записанный уличным пультом, и весь
+// день говорил не тем Людвигом. Теперь каждый ключ с префиксом этого пульта.
+// Ключ ElevenLabs один на аккаунт — он намеренно общий.
+const NS='shift:';
+const LS={ get:k=>localStorage.getItem(k==='xiKey'?k:NS+k),
+            set:(k,v)=>localStorage.setItem(k==='xiKey'?k:NS+k,v),
+            del:k=>localStorage.removeItem(k==='xiKey'?k:NS+k) };
 // ВЕРСИЯ ЗАФИКСИРОВАНА НАМЕРЕННО (15.08.2026). Без номера CDN отдаёт самую
 // свежую сборку — а 1.18.0 вышла 14 августа, за три дня до эфира, и никем ещё
 // не обкатана. У самой ElevenLabs уже был случай, когда обновление вложенной
@@ -300,27 +310,7 @@ let tailTimer=null, toggleTimer=null;
 let userStopping=false, reconnectTimer=null;
 let sessionCfg=null;      // {agentId, overrides} для реконнекта
 let dayContextText='';    // сохранённый контекст дня
-// ПАМЯТЬ БРАУЗЕРА У ПУЛЬТОВ ОБЩАЯ — и разные репозитории её НЕ развели.
-// Все пульты лежат на одном домене maxgerasimenko1998-ops.github.io, а
-// localStorage привязан к ДОМЕНУ, а не к папке. Поэтому пульт улицы записывал
-// 'ludwigAgentId', и пульт Shift подхватывал уличный мозг. 05.09 в 10:46 на
-// вопрос «кто такой Shift» отвечал уличный Людвиг — он про заказчика не знает
-// и по §5 («никогда не обсуждать фирмы») честно отказался говорить. Тем же
-// каналом приезжал контекст дня «Нойбранденбург», оставшийся от съёмки 29.08.
-// Лечение: у каждого пульта свой префикс, чужие ключи он больше не видит.
-const PULT='shift:';
-// Настройки, не зависящие от пульта, переносим один раз, чтобы не настраивать
-// микрофон заново. Мозг, контекст дня и режим НЕ переносим — именно они и
-// приезжали чужими; они должны взяться из этого пульта.
-try{
-  if(!localStorage.getItem(PULT+'pereneseno')){
-    ['xiKey','micDeviceId','micDeviceLabel','micMode','outDeviceId','connMode','klavishi','personas','clips']
-      .forEach(k=>{ const v=localStorage.getItem(k); if(v!==null) localStorage.setItem(PULT+k,v); });
-    localStorage.setItem(PULT+'pereneseno','1');
-  }
-}catch{}
-function pomni(k){ try{ return localStorage.getItem(PULT+k); }catch{ return null; } }
-let modeText=pomni('rkMode')||'';   // MODUS: LOCATION | MODUS: STRASSE
+let modeText=LS.get('rkMode')||'';   // MODUS: LOCATION | MODUS: STRASSE
 let hiddenLog=[];         // отправленные скрытые контексты — для реплея после обрыва
 const HIDDEN_MAX=12;      // за 3 часа их накопились бы десятки и каждый реконнект гнал бы всё заново
 let pendingRegie=false;   // была ли команда режиссёра до обрыва
@@ -330,7 +320,7 @@ function vibrate(ms){ try{ navigator.vibrate?.(ms); }catch{} }
 // Хранилище переполняется от накопленных аудиоклипов. Без обёртки первая же
 // запись роняла бы весь обработчик «Подключиться» — и кнопка молча ничего не делала.
 function store(k,v){
-  try{ localStorage.setItem(PULT+k,v); return true; }
+  try{ LS.set(k,v); return true; }
   catch(e){ try{ log('⚠️ Память браузера переполнена — удали лишние точные фразы (долгое нажатие на кнопку клипа)'); }catch{}
             return false; }
 }
@@ -353,7 +343,7 @@ const DEFAULT_PERSONAS = {
 - Gib ehrlich zu, dass du eine KI bist, wenn gefragt.`,
     first:'', lang:'', voice:'' },
 };
-function loadPersonas(){ try{ return {...DEFAULT_PERSONAS, ...JSON.parse(pomni('personas')||'{}')}; }catch{ return {...DEFAULT_PERSONAS}; } }
+function loadPersonas(){ try{ return {...DEFAULT_PERSONAS, ...JSON.parse(LS.get('personas')||'{}')}; }catch{ return {...DEFAULT_PERSONAS}; } }
 function saveUserPersonas(p){ const u={}; for(const k in p) if(!(k in DEFAULT_PERSONAS)) u[k]=p[k]; store('personas', JSON.stringify(u)); }
 let personas = loadPersonas();
 function refreshPersonaList(sel){
@@ -397,7 +387,7 @@ const QUICK=[
 QUICK.forEach(([label,text])=>{ const b=document.createElement('button'); b.textContent=label; b.onclick=()=>{ $('ctxInput').value=text; }; $('quickCtx').appendChild(b); });
 
 // ---- саундборд: точные фразы (локальные аудиоклипы) ----
-let clips=[]; try{ clips=JSON.parse(pomni('clips')||'[]'); }catch{}
+let clips=[]; try{ clips=JSON.parse(LS.get('clips')||'[]'); }catch{}
 const boardAudio=new Audio();
 function renderBoard(){
   const b=$('board'); b.innerHTML='';
@@ -558,8 +548,8 @@ async function refreshMicList(){
   const ins=all.filter(d=>d.kind==='audioinput');
   const outs=all.filter(d=>d.kind==='audiooutput');
 
-  const sel=$('micDevice'), keep=pomni('micDeviceId')||'';
-  const keepLabel=pomni('micDeviceLabel')||'';
+  const sel=$('micDevice'), keep=LS.get('micDeviceId')||'';
+  const keepLabel=LS.get('micDeviceLabel')||'';
   sel.innerHTML='<option value="">по умолчанию (что выберет телефон)</option>';
   ins.forEach((d,i)=>{
     const o=document.createElement('option');
@@ -584,7 +574,7 @@ async function refreshMicList(){
   const canPickOutput = outs.length>0 && ('setSinkId' in HTMLMediaElement.prototype || IS_ANDROID);
   $('outRow').classList.toggle('hidden', !canPickOutput);
   if(canPickOutput){
-    const os=$('outDevice'), okeep=pomni('outDeviceId')||'';
+    const os=$('outDevice'), okeep=LS.get('outDeviceId')||'';
     os.innerHTML='<option value="">по умолчанию (что выберет телефон)</option>';
     outs.forEach((d,i)=>{
       const o=document.createElement('option');
@@ -625,7 +615,7 @@ $('micDevice').onchange=async()=>{
 };
 // ---- способ связи ----
 const connMode = () => $('connMode').value;
-$('connMode').value = pomni('connMode') || 'webrtc';
+$('connMode').value = LS.get('connMode') || 'webrtc';
 $('connMode').onchange = ()=>{
   store('connMode', connMode());
   log(connMode()==='websocket'
@@ -676,7 +666,7 @@ $('micRetry').onclick=()=>reacquireMic('вручную');
 // ---- режим микрофона ----
 const micMode = () => $('micMode').value;
 // осталось два режима; сохранённый «toggle» со старых версий превращаем в hold
-$('micMode').value = (pomni('micMode')==='open') ? 'open' : 'toggle';
+$('micMode').value = (LS.get('micMode')==='open') ? 'open' : 'toggle';
 $('micMode').onchange=()=>{
   // Сессию НЕ трогаем: переключение режима на живом разговоре роняло связь
   // (01.08). Просто меняем состояние микрофона.
@@ -811,12 +801,12 @@ document.addEventListener('visibilitychange',()=>{
 const SVOJ_AGENT='agent_1301m1pz9190fswvb0bj982sx9hz';   // Ludwig — SHIFT (DJ Ice Rolls, 05.09)
 try{
   const qa=new URLSearchParams(location.search).get('agent');
-  if(qa && /^agent_[a-z0-9]+$/i.test(qa)){ store('ludwigAgentId',qa); history.replaceState(null,'',location.pathname); }
+  if(qa && /^agent_[a-z0-9]+$/i.test(qa)){ LS.set('ludwigAgentId',qa); history.replaceState(null,'',location.pathname); }
 }catch{}
-$('agentId').value=pomni('ludwigAgentId')||SVOJ_AGENT;
+$('agentId').value=LS.get('ludwigAgentId')||SVOJ_AGENT;
 const DEN_PO_UMOLCHANIYU='Samstag, der 5. September 2026, Berlin. Du bist den ganzen Tag zu Gast beim Haus shift '+
   'und bei seinem Meister DJ Ice Rolls, und du hast geruht, bei ihm das Eisrollen zu erlernen. Es wird gefilmt.';
-$('dayCtx').value=pomni('dayCtx')||DEN_PO_UMOLCHANIYU;
+$('dayCtx').value=LS.get('dayCtx')||DEN_PO_UMOLCHANIYU;
 function log(l){ const e=$('log'); e.textContent+=l+'\n'; e.scrollTop=e.scrollHeight; }
 // НИКАКИХ alert(): Chrome предлагает «Dialogfelder unterdrücken», после чего
 // все окна молча исчезают навсегда — и пульт «просто не работает» (31.07).
@@ -1171,7 +1161,7 @@ $('sayBtn').onclick=async()=>{
 // ---- НАДИКТОВКА ГОЛОСОМ ----
 // Оператор не печатает — зажимает кнопку и говорит на любом языке.
 // Запись → расшифровка через ElevenLabs Scribe → сразу уходит роботу как задание.
-$('apiKey').value=pomni('xiKey')||'';
+$('apiKey').value=LS.get('xiKey')||'';
 let rec=null, recChunks=[], recStream=null;
 
 // Нажал — говоришь — нажал ещё раз. Зажимать ничего не надо:
@@ -1425,7 +1415,7 @@ const DEJSTVIYA = [
   ['bye',    '👋 Завершить диалог',                 ()=>$('qaBye')?.click()],
 ];
 let klavishi = {};
-try{ klavishi = JSON.parse(pomni('klavishi')||'{}'); }catch{}
+try{ klavishi = JSON.parse(LS.get('klavishi')||'{}'); }catch{}
 let uchim = null;          // какое действие сейчас ждёт нажатия
 const poslednie = [];      // последние нажатия — для проверки устройства
 
