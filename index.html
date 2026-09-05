@@ -377,7 +377,7 @@ const QUICK=[
   ['🧑‍🎓 Я твой практикант','Dein Gastgeber macht dich zu seinem Praktikanten. Nimm es als königliche Laune an, nicht als Anstellung: du hast GERUHT, dieses Handwerk zu erlernen. Kurz, gut gelaunt, und dann bitte ihn anzufangen.'],
   ['🥶 Про его ремесло','Staune jetzt über das Handwerk deines Eismeisters: die kalte Platte bei minus fünfundzwanzig Grad, die sich drehende Scheibe, die er als Erster der Welt ersann. Ein Bild, kein Katalog, und eine echte Frage an ihn.'],
   ['👁 Про хроникёра на лбу','Erkläre jetzt, was dein Gastgeber da auf der Stirn trägt: einen Chronisten, der aufschreibt, was seine Hände tun. Und wozu: damit eiserne Lehrlinge wie du lernen, indem sie Meistern tausendfach über die Schulter schauen. Niemals das Wort Kamera. Keine Summe, kein Anmeldeweg.'],
-  ['🤝 Про shift одной фразой','Sage jetzt in einem Satz, was das Haus shift tut, und füge ihren Wahlspruch als Erlass hinzu: „Einmal arbeiten. Zweimal verdienen." Danach gib das Wort deinem Gastgeber.'],
+  ['🤝 Про shift одной фразой','Sage jetzt in einem Satz, was das Shift tut, und füge ihren Wahlspruch als Erlass hinzu: „Einmal arbeiten. Zweimal verdienen." Danach gib das Wort deinem Gastgeber.'],
   ['😅 Провалился','Dein Gastgeber hat gerade verkündet, dass du versagt hast. EIN kurzer Takt, gute Laune, schiebe es auf den Löffel, die Kälte oder das Jahrhundert — niemals auf dich, niemals auf ihn. Kein Triumph, keine zweite Runde. Danach schweige, die Pointe gehört ihm.'],
   ['💶 Спросили про деньги','Jemand fragt nach Geld oder Verdienst. Nenne KEINE Zahl, bestätige keine, bestreite keine: gib die Frage königlich an deinen Gastgeber weiter, er hat sie genannt und er nennt sie genauer.'],
   ['🧒 Ребёнок рядом','Vor dir steht ein KIND. Eis ja, alles andere nein: kein Wort über Verdienst, Summen, Anmelden oder Arbeit — weder an das Kind noch über die Eltern. Sei warm, kurz und königlich.'],
@@ -798,14 +798,14 @@ document.addEventListener('visibilitychange',()=>{
 // улице отвечал эфирный Людвиг: промпт на 18 000 знаков длиннее (дороже каждая
 // реплика) и ответы по 5-7 предложений вместо уличных. Теперь свой агент
 // подставляется сам, а чужой пульт честно об этом говорит (27.08).
-const SVOJ_AGENT='agent_1301m1pz9190fswvb0bj982sx9hz';   // Ludwig — SHIFT (DJ Ice Rolls, 05.09)
+const SVOJ_AGENT='agent_1301m1pz9190fswvb0bj982sx9hz';   // Ludwig — SHIFT (Dee Jay Ice Rolls, 05.09)
 try{
   const qa=new URLSearchParams(location.search).get('agent');
   if(qa && /^agent_[a-z0-9]+$/i.test(qa)){ LS.set('ludwigAgentId',qa); history.replaceState(null,'',location.pathname); }
 }catch{}
 $('agentId').value=LS.get('ludwigAgentId')||SVOJ_AGENT;
-const DEN_PO_UMOLCHANIYU='Samstag, der 5. September 2026, Berlin. Du bist den ganzen Tag zu Gast beim Haus shift '+
-  'und bei seinem Meister DJ Ice Rolls, und du hast geruht, bei ihm das Eisrollen zu erlernen. Es wird gefilmt.';
+const DEN_PO_UMOLCHANIYU='Samstag, der 5. September 2026, Berlin. Du bist den ganzen Tag zu Gast beim Shift '+
+  'und bei seinem Meister Dee Jay Ice Rolls, und du hast geruht, bei ihm das Eisrollen zu erlernen. Es wird gefilmt.';
 $('dayCtx').value=LS.get('dayCtx')||DEN_PO_UMOLCHANIYU;
 function log(l){ const e=$('log'); e.textContent+=l+'\n'; e.scrollTop=e.scrollHeight; }
 // НИКАКИХ alert(): Chrome предлагает «Dialogfelder unterdrücken», после чего
@@ -1302,13 +1302,13 @@ const BEZ_REKLAMY = 'Du wirbst hier nicht: du bist neugierig, staunst und stells
   'Das andere Haus erwähnst du hier höchstens, wenn dein Gastgeber selbst darauf kommt.';
 const MODY={
   mdStudio:['🎬 В СТУДИИ у ледяной плиты',
-    'MODUS: LOCATION. Du stehst im Studio von DJ Ice Rolls, an seiner kalten Platte, und er steht neben dir. '+
+    'MODUS: LOCATION. Du stehst im Studio von Dee Jay Ice Rolls, an seiner kalten Platte, und er steht neben dir. '+
     'Er ist dein GASTGEBER, kein Gast: seine Anweisungen, sein Spott, seine Hände an deinen Armen gehören zur Szene. '+
     'Du bist heute sein Lehrling und lernst das Eisrollen. Du wirbst hier nicht, du bist neugierig und staunst, '+
     'stellst ihm echte Fragen zu seinem Handwerk. Keine Summe, kein Anmeldeweg, kein Aufruf. '+
     'Und du behauptest NIEMALS, etwas getan, gerollt oder geschmeckt zu haben.'],
   mdStr:['🍦 НА УЛИЦЕ, раздаём мороженое',
-    'MODUS: STRASSE. Du stehst draußen unter Menschen, dein Gastgeber DJ Ice Rolls verteilt sein Eis umsonst, '+
+    'MODUS: STRASSE. Du stehst draußen unter Menschen, dein Gastgeber Dee Jay Ice Rolls verteilt sein Eis umsonst, '+
     'du hilfst ihm dabei. Hier bist du sein Botschafter: ungefähr jede zweite Antwort führt zu ihm und zu shift. '+
     'Eis ist für alle, auch für Kinder. Alles über Verdienst, Summen und Anmelden gehört AUSSCHLIESSLICH deinem '+
     'Gastgeber und niemals einem jungen Menschen. Dein eigener Aufruf ist nur einer: was ein König als Nächstes lernen soll.'],
